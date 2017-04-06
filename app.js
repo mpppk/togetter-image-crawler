@@ -8,13 +8,18 @@ let nightmare = Nightmare();
 
 const setTimeoutAsync = delay => new Promise(r => setTimeout(r, delay));
 
+const clickMoreButton = (nightmare, togetterUrl) => {
+  return nightmare
+    .goto(togetterUrl)
+    .click('.more_tweet_box a.btn')
+    .wait('.pagenation')
+};
+
 const getTogetterImages = (togetterUrl, interval) => {
   co(function *() {
     console.log(`fetching... [${togetterUrl}]`);
-    const urls = yield nightmare
-      .goto(togetterUrl)
-      .click('.more_tweet_box a.btn')
-      .wait('.pagenation')
+    const urls =
+      yield clickMoreButton(nightmare, togetterUrl)
       .evaluate(() => {
         const nodeList =  document.querySelectorAll('.list_photo img');
         return Array.prototype.map.call(nodeList, (node) => node.src);
@@ -32,4 +37,24 @@ const getTogetterImages = (togetterUrl, interval) => {
   });
 };
 
-getTogetterImages('https://togetter.com/li/1088229', 2000);
+const getMaxPage = (togetterUrl) => {
+  return co(function *() {
+    console.log(`fetching... [${togetterUrl}]`);
+    const pageLinks =
+      yield clickMoreButton(nightmare, togetterUrl)
+      .evaluate(() => {
+        const nodeList =  document.querySelectorAll('.pagenation a');
+        return Array.prototype.map.call(nodeList, (node) => node.textContent);
+      });
+    yield nightmare.end();
+    const pages = pageLinks
+      .filter(p => /^[0-9]+$/.test(p))
+      .map(Number);
+    return Math.max.apply(null, pages);
+  });
+};
+
+getMaxPage('https://togetter.com/li/1088229')
+  .then(page => console.log(page));
+// getTogetterImages('https://togetter.com/li/1088229', 2000);
+// getTogetterImages('https://togetter.com/li/1088229?page=2', 2000);
