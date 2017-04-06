@@ -93,7 +93,7 @@ co(function *() {
   const maxPage = yield getMaxPage(togetterUrl);
   for(let i = 0; i < maxPage; i++) {
     console.log(`page ${i+1}/${maxPage}`);
-    yield getTogetterImages('https://togetter.com/li/1088229?page=' + (i+1), interval);
+    yield getTogetterImages(togetterUrl + '?page=' + (i+1), interval);
   }
 })
   .then(() => console.log('finished!'), e => console.log(e));
