@@ -5,8 +5,8 @@
   "main": "app.js",
   "dependencies": {
     "axios": "^0.16.0",
-    "cheerio-httpcli": "^0.6.11",
-    "co": "^4.6.0"
+    "co": "^4.6.0",
+    "nightmare": "^2.10.0"
   },
   "devDependencies": {},
   "scripts": {

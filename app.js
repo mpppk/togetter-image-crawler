@@ -1,18 +1,25 @@
-const client = require('cheerio-httpcli');
 const co = require('co');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const Nightmare = require('nightmare');
+
+let nightmare = Nightmare();
 
 const setTimeoutAsync = delay => new Promise(r => setTimeout(r, delay));
 
-const getTogetterImages = togetterUrl => {
+const getTogetterImages = (togetterUrl, interval) => {
   co(function *() {
-    const result = yield client.fetch(togetterUrl);
-    const $ = result.$;
-    const urls = $('.list_photo img')
-      .map((i, d) => $(d).attr('src'))
-      .get();
+    console.log(`fetching... [${togetterUrl}]`);
+    const urls = yield nightmare
+      .goto(togetterUrl)
+      .click('.more_tweet_box a.btn')
+      .wait('.pagenation')
+      .evaluate(() => {
+        const nodeList =  document.querySelectorAll('.list_photo img');
+        return Array.prototype.map.call(nodeList, (node) => node.src);
+      });
+    yield nightmare.end();
 
     for(let i in urls) {
       const url = urls[i];
@@ -20,9 +27,9 @@ const getTogetterImages = togetterUrl => {
       console.log(`${+i+1}/${urls.length} ${fileName}`);
       const response = yield axios.get(url, {responseType: 'stream'});
       response.data.pipe(fs.createWriteStream(fileName));
-      yield setTimeoutAsync(1000);
+      yield setTimeoutAsync(interval);
     }
   });
 };
 
-getTogetterImages('https://togetter.com/li/1088229');
+getTogetterImages('https://togetter.com/li/1088229', 2000);
