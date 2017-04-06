@@ -79,11 +79,21 @@ const getMaxPage = (togetterUrl) => {
   });
 };
 
+const togetterUrl = process.argv[2];
+let interval = process.argv[3] || 2000;
+interval = Number(interval);
+
+if(!togetterUrl.includes('http')) {
+  console.log('URL invalid');
+  console.log('node app.js [URL] [interval]');
+  process.exit(1);
+}
+
 co(function *() {
-  const maxPage = yield getMaxPage('https://togetter.com/li/1088229');
+  const maxPage = yield getMaxPage(togetterUrl);
   for(let i = 0; i < maxPage; i++) {
     console.log(`page ${i+1}/${maxPage}`);
-    yield getTogetterImages('https://togetter.com/li/1088229?page=' + (i+1), 2000);
+    yield getTogetterImages('https://togetter.com/li/1088229?page=' + (i+1), interval);
   }
 })
   .then(() => console.log('finished!'), e => console.log(e));
